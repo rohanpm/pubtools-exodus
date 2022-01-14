@@ -41,6 +41,11 @@ setup(
     ],
     install_requires=get_requirements(),
     python_requires=">=2.6",
+    entry_points={
+        "pubtools.hooks": [
+            "pubtools-exodus-pulp = pubtools.exodus._hooks.pulp",
+        ]
+    },
     project_urls={
         "Changelog": "https://github.com/release-engineering/pubtools-exodus/blob/main/CHANGELOG.md",
     },
