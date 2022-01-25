@@ -96,3 +96,7 @@ disable=print-statement,
         # we use black code style and don't need additional checks
         bad-continuation,
         line-too-long,
+        # don't enforce use of f-strings
+        consider-using-f-string,
+        # don't enforce 'raise ... from ...'; not py2 compatible
+        raise-missing-from
