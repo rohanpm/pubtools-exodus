@@ -44,7 +44,10 @@ setup(
     entry_points={
         "pubtools.hooks": [
             "pubtools-exodus-pulp = pubtools.exodus._hooks.pulp",
-        ]
+        ],
+        "console_scripts": [
+            "pubtools-exodus-push = pubtools.exodus._tasks.push:entry_point"
+        ],
     },
     project_urls={
         "Changelog": "https://github.com/release-engineering/pubtools-exodus/blob/main/CHANGELOG.md",
