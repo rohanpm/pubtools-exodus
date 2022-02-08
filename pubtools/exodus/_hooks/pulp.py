@@ -2,148 +2,28 @@ import json
 import logging
 import os
 import sys
-import time
 from threading import Lock
 
 import attr
-import requests
-from monotonic import monotonic
 from pubtools.pluggy import hookimpl, pm  # pylint: disable=wrong-import-order
-from requests.packages.urllib3.util.retry import (  # pylint: disable=import-error
-    Retry,
-)
 from six.moves.urllib.parse import urljoin
+
+from ..gateway import ExodusGatewaySession
 
 LOG = logging.getLogger("pubtools-exodus")
 
 # pylint: disable=unused-argument
 
 
-class ExodusPulpHandler:  # pylint: disable=too-many-instance-attributes
+class ExodusPulpHandler(ExodusGatewaySession):
     def __init__(self):
-        # These variables are set only through environment variables
-        # expected on all applicable hosts.
-        self.gw_url = os.getenv("EXODUS_GW_URL")
-        self.gw_env = os.getenv("EXODUS_GW_ENV")
-        self.gw_crt = os.getenv("EXODUS_GW_CERT")
-        self.gw_key = os.getenv("EXODUS_GW_KEY")
-
-        # These defaults are not advertised or expected but can be controlled
-        # by environment variables when needed (e.g., testing).
-        self.retries = int(os.getenv("EXODUS_GW_RETRIES") or "5")
-        self.timeout = int(os.getenv("EXODUS_GW_TIMEOUT") or "900")
-        self.wait = int(os.getenv("EXODUS_GW_WAIT") or "5")
+        super(ExodusPulpHandler, self).__init__()
 
         self.lock = Lock()
-        self.session = None
-        self.publish = None
 
     def exodus_enabled(self):
         enable_vals = ["true", "t", "1", "yes", "y"]
         return os.getenv("EXODUS_ENABLED", "False").lower() in enable_vals
-
-    def new_session(self):
-        retry_strategy = Retry(
-            total=int(self.retries),
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504],
-        )
-        adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
-
-        out = requests.Session()
-        out.cert = (self.gw_crt, self.gw_key)
-        out.mount(self.gw_url, adapter)
-
-        return out
-
-    def unpack_response(self, response):
-        """Raise if response was not successful.
-
-        This is the same as response.raise_for_status(), merely wrapping it
-        to ensure the body is logged when possible.
-        """
-
-        try:
-            response.raise_for_status()
-        except Exception as outer:
-            try:
-                body = response.json()
-            except:
-                raise outer
-
-            LOG.error("unsuccessful response from exodus-gw: %s", body)
-            raise
-
-    def do_request(self, **kwargs):
-        if not self.session:
-            self.session = self.new_session()
-
-        resp = self.session.request(**kwargs)
-        self.unpack_response(resp)
-        return resp
-
-    def check_cert(self):
-        """Issue request to exodus-gw to identify permissions."""
-
-        for key, val in {"cert": self.gw_crt, "key": self.gw_key}.items():
-            if not val:
-                LOG.debug(
-                    "exodus-gw %s not found, authentication may fail", key
-                )
-
-        auth_url = urljoin(self.gw_url, "/whoami")
-        resp = self.do_request(method="GET", url=auth_url)
-        context = resp.json()
-
-        for user_type, ident in (
-            ("client", "serviceAccountId"),
-            ("user", "internalUsername"),
-        ):
-            typed_ctx = context[user_type]
-            if typed_ctx["authenticated"]:
-                roles = [str(role) for role in typed_ctx["roles"]]
-                LOG.debug(
-                    "authenticated with exodus-gw at %s as %s %s (roles: %s)",
-                    self.gw_url,
-                    user_type,
-                    typed_ctx[ident],
-                    roles,
-                )
-                break
-        else:
-            LOG.debug("not authenticated with exodus-gw at %s", self.gw_url)
-
-    def new_publish(self):
-        """Issue request to exodus-gw to create a new publish."""
-        self.check_cert()
-
-        publish_url = os.path.join(self.gw_url, self.gw_env, "publish")
-        resp = self.do_request(method="POST", url=publish_url)
-        return resp.json()
-
-    def poll_commit_completion(self, commit):
-        """Issues request(s) to exodus-gw for the commit's state, returning
-        if/when the state is either "COMPLETE" or "FAILED".
-        """
-
-        timelimit = monotonic() + self.timeout
-
-        msg = "exodus-gw commit %s to %s" % (commit["id"], self.gw_url)
-
-        while monotonic() < timelimit:
-            task_url = urljoin(self.gw_url, commit["links"]["self"])
-            resp = self.do_request(method="GET", url=task_url)
-            task = resp.json()
-
-            if task["state"] == "COMPLETE":
-                LOG.info("%s complete", msg)
-                return task
-            if task["state"] == "FAILED":
-                raise RuntimeError("%s failed" % msg)
-
-            time.sleep(self.wait)
-
-        raise RuntimeError("Polling for %s timed out" % msg)
 
     @hookimpl
     def pulp_repository_pre_publish(self, repository, options):
