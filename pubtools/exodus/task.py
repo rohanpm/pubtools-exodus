@@ -12,11 +12,12 @@ LOG_FORMAT = "%(asctime)s [%(levelname)-8s] %(message)s"
 class ExodusTask(ExodusGatewaySession):
     """Base class for Exodus tasks"""
 
-    def __init__(self):
+    def __init__(self, args=None):
         super(ExodusTask, self).__init__()
 
         self._args = None
         self._extra_args = None
+        self._override_args = args
 
         self.parser = ArgumentParser(
             formatter_class=RawDescriptionHelpFormatter
@@ -31,7 +32,7 @@ class ExodusTask(ExodusGatewaySession):
         else parse with defined options and return the args
         """
         if not self._args:
-            self._args, _ = self.parser.parse_known_args()
+            self._args, _ = self.parser.parse_known_args(self._override_args)
         return self._args
 
     @property
@@ -41,7 +42,9 @@ class ExodusTask(ExodusGatewaySession):
         else parse and return the remaining args
         """
         if not self._extra_args:
-            _, self._extra_args = self.parser.parse_known_args()
+            _, self._extra_args = self.parser.parse_known_args(
+                self._override_args
+            )
         return self._extra_args
 
     def _basic_args(self):
