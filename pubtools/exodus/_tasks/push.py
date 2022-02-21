@@ -14,51 +14,55 @@ class ExodusPushTask(ExodusTask):
         super(ExodusPushTask, self).add_args()
 
         self.parser.add_argument(
-            "--source",
-            help="Local path to a file or directory for sync to the exodus CDN",
-        )
-        self.parser.add_argument(
-            "--dest",
-            help="Remote destination for sync",
+            "sync",
+            nargs="+",
+            help=(
+                """A comma-separated pair of paths to sync: SRC,DEST.\n"""
+                """Where SRC is a local path to a file or directory and DEST\n"""
+                """is the remote destination for sync."""
+            ),
         )
 
     def run(self):
         LOG.debug("Exodus push begins")
 
-        src = self.args.source
-        dest = (
-            self.args.dest
-            if ":" in self.args.dest
-            else "exodus:%s" % self.args.dest
-        )
+        publish = self.new_publish()
+        publish_id = str(publish.get("id"))
+        LOG.info("Publish ID: %s", publish_id)
 
-        cmd = [
-            "exodus-rsync",
-            src,
-            dest,
-        ]
-        if self.args.verbose:
-            cmd.append("-" + "v" * self.args.verbose)
-        if self.extra_args:
-            cmd.extend(self.extra_args)
+        for item in self.args.sync:
+            LOG.debug("Processing %s", item)
+            items = item.split(",")
+            src, dest = items[0].strip(), items[1].strip()
+            dest = dest if ":" in dest else "exodus:%s" % dest
 
-        LOG.info(" ".join(cmd))
+            cmd = ["exodus-rsync", "--exodus-publish", publish_id, src, dest]
+            if self.args.verbose:
+                cmd.append("-" + "v" * self.args.verbose)
+            if self.extra_args:
+                cmd.extend(self.extra_args)
 
-        proc = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
-        )
-        for line in proc.stdout:
-            LOG.info(line.strip())
+            LOG.info(" ".join(cmd))
 
-        ret = proc.wait()
-        if ret != 0:
-            raise RuntimeError("Exodus push failed")
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True,
+            )
+            for line in proc.stdout:
+                LOG.info(line.strip())
+
+            ret = proc.wait()
+            if ret != 0:
+                raise RuntimeError("Exodus push failed")
+
+        commit_task = self.commit_publish(publish)
+        self.poll_commit_completion(commit_task)
 
         LOG.info("Exodus push is complete")
 
 
-def entry_point():
-    ExodusPushTask().main()
+def entry_point(args=None):
+    task = ExodusPushTask(args)
+    task.main()
