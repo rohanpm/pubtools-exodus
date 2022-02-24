@@ -1,5 +1,4 @@
 six
-backoff
 requests
 monotonic
 pubtools>=0.3.0
