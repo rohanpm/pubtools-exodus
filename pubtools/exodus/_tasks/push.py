@@ -1,6 +1,8 @@
 import logging
 import subprocess
 
+from pushsource import Source
+
 from pubtools.exodus.task import ExodusTask
 
 LOG = logging.getLogger("pubtools-exodus")
@@ -14,14 +16,20 @@ class ExodusPushTask(ExodusTask):
         super(ExodusPushTask, self).add_args()
 
         self.parser.add_argument(
-            "sync",
-            nargs="+",
+            "source",
             help=(
-                """A comma-separated pair of paths to sync: SRC,DEST.\n"""
-                """Where SRC is a local path to a file or directory and DEST\n"""
-                """is the remote destination for sync."""
+                """Source(s) of content to be pushed (e.g., 'staged:/path/to/staging/root')."""
             ),
         )
+
+    @property
+    def push_items(self):
+        with Source.get(self.args.source) as source:
+            for item in source:
+                if item.src and len(item.dest) == 1:
+                    yield item
+                else:
+                    LOG.warning("Unexpected push item type: %s", item)
 
     def run(self):
         LOG.debug("Exodus push begins")
@@ -30,13 +38,15 @@ class ExodusPushTask(ExodusTask):
         publish_id = str(publish.get("id"))
         LOG.info("Publish ID: %s", publish_id)
 
-        for item in self.args.sync:
+        for item in self.push_items:
             LOG.debug("Processing %s", item)
-            items = item.split(",")
-            src, dest = items[0].strip(), items[1].strip()
-            dest = dest if ":" in dest else "exodus:%s" % dest
-
-            cmd = ["exodus-rsync", "--exodus-publish", publish_id, src, dest]
+            cmd = [
+                "exodus-rsync",
+                "--exodus-publish",
+                publish_id,
+                item.src,
+                "exodus:%s" % item.dest[0],
+            ]
             if self.args.verbose:
                 cmd.append("-" + "v" * self.args.verbose)
             if self.extra_args:
