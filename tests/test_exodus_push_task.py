@@ -1,16 +1,20 @@
 import io
 import logging
+import os
 
 import mock
 import pytest
+from pushsource import PushItem, Source
 from six import u
 
 from pubtools.exodus._tasks.push import entry_point
 
+TEST_DATA = os.path.join(os.path.dirname(__file__), "test_data", "exodus_push")
+
 
 @pytest.mark.parametrize(
     "sys_argv",
-    [["", "--debug", "/path/to/my-source,/path/to/my-dest"]],
+    [["", "--debug", "staged:%s" % os.path.join(TEST_DATA, "source-1")]],
 )
 @mock.patch("pubtools.exodus._tasks.push.ExodusPushTask.run")
 def test_exodus_push_entry_point(
@@ -29,12 +33,12 @@ def test_exodus_push_typical(mock_popen, successful_gw_task, caplog):
     )
     mock_popen.return_value.wait.return_value = 0
 
+    src = os.path.join(TEST_DATA, "source-1")
     args = [
         "--debug",
         "-vvv",
         "--dry-run",
-        "/path/to/my-source,/path/to/my-dest",
-        "/path/to/other-source,/path/to/other-dest",
+        "staged:%s" % src,
         "--exodus-conf",
         "/path/to/my-conf",
     ]
@@ -44,8 +48,8 @@ def test_exodus_push_typical(mock_popen, successful_gw_task, caplog):
             "exodus-rsync",
             "--exodus-publish",
             "497f6eca-6276-4993-bfeb-53cbbbba6f08",
-            "/path/to/my-source",
-            "exodus:/path/to/my-dest",
+            os.path.join(src, "kickstart-repo-x86_64", "RAW"),
+            "exodus:kickstart-repo-x86_64",
             "-vvv",
             "--dry-run",
             "--exodus-conf",
@@ -55,8 +59,8 @@ def test_exodus_push_typical(mock_popen, successful_gw_task, caplog):
             "exodus-rsync",
             "--exodus-publish",
             "497f6eca-6276-4993-bfeb-53cbbbba6f08",
-            "/path/to/other-source",
-            "exodus:/path/to/other-dest",
+            os.path.join(src, "kickstart-repo-s390x", "RAW"),
+            "exodus:kickstart-repo-s390x",
             "-vvv",
             "--dry-run",
             "--exodus-conf",
@@ -85,7 +89,7 @@ def test_exodus_push_typical(mock_popen, successful_gw_task, caplog):
             "",
             "--debug",
             "--verbose",
-            "/path/to/my-source,/path/to/my-dest",
+            "staged:%s" % os.path.join(TEST_DATA, "source-2"),
         ]
     ],
 )
@@ -98,13 +102,15 @@ def test_exodus_push_subprocess_error(
     )
     mock_popen.return_value.wait.return_value = 1
 
+    src = os.path.join(TEST_DATA, "source-2")
+
     caplog.set_level(logging.DEBUG, "pubtools-exodus")
     cmd = [
         "exodus-rsync",
         "--exodus-publish",
         "497f6eca-6276-4993-bfeb-53cbbbba6f08",
-        "/path/to/my-source",
-        "exodus:/path/to/my-dest",
+        os.path.join(TEST_DATA, "source-2", "origin", "RAW"),
+        "exodus:origin",
         "-v",
     ]
 
@@ -119,3 +125,29 @@ def test_exodus_push_subprocess_error(
     mock_popen.assert_called_with(
         cmd, stderr=-2, stdout=-1, universal_newlines=True
     )
+
+
+@pytest.mark.parametrize(
+    "sys_argv",
+    [
+        [
+            "",
+            "--debug",
+            "--verbose",
+            "test:%s" % os.path.join(TEST_DATA, "source-2"),
+        ]
+    ],
+)
+@mock.patch("pubtools.exodus._tasks.push.subprocess.Popen")
+def test_exodus_push_unexpected_push_item(
+    mock_popen, successful_gw_task, patch_sys_argv, caplog
+):
+    mock_popen.return_value.wait.return_value = 1
+    caplog.set_level(logging.DEBUG, "pubtools-exodus")
+
+    Source.register_backend("test", lambda: [PushItem(name="test")])
+
+    entry_point()
+
+    assert "Unexpected push item" in caplog.text
+    mock_popen.assert_not_called()
