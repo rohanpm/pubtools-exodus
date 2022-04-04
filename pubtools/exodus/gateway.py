@@ -144,9 +144,16 @@ class ExodusGatewaySession(
         commit = resp.json()
         return commit
 
+    def exodus_enabled(self):
+        enable_vals = ["true", "t", "1", "yes", "y"]
+        return os.getenv("EXODUS_ENABLED", "False").lower() in enable_vals
+
     def _populate_exodus_gw_vars(self):
         """Populate exodus gateway details from environment variables. All exodus CDN transactions
         go through exodus gateway."""
+        if not self.exodus_enabled():
+            return
+
         self.gw_env = os.getenv("EXODUS_GW_ENV")
         if not self.gw_env:
             raise RuntimeError(

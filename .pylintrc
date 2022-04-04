@@ -99,4 +99,6 @@ disable=print-statement,
         # don't enforce use of f-strings
         consider-using-f-string,
         # don't enforce 'raise ... from ...'; not py2 compatible
-        raise-missing-from
+        raise-missing-from,
+        # don't enforce Python3 style super(); not py2 compatible
+        super-with-arguments

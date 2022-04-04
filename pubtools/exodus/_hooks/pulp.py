@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import sys
 from threading import Lock
 
@@ -20,10 +19,6 @@ class ExodusPulpHandler(ExodusGatewaySession):
         super(ExodusPulpHandler, self).__init__()
 
         self.lock = Lock()
-
-    def exodus_enabled(self):
-        enable_vals = ["true", "t", "1", "yes", "y"]
-        return os.getenv("EXODUS_ENABLED", "False").lower() in enable_vals
 
     @hookimpl
     def pulp_repository_pre_publish(self, repository, options):
@@ -64,6 +59,9 @@ class ExodusPulpHandler(ExodusGatewaySession):
         This implementation commits the active exodus-gw publish, making
         the content visible on the target CDN environment.
         """
+
+        if not self.exodus_enabled():
+            return
 
         if not self.publish:
             LOG.debug("no exodus-gw publish to commit")
