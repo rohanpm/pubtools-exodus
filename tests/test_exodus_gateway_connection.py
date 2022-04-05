@@ -13,12 +13,14 @@ from pubtools.exodus.gateway import ExodusGatewaySession
     "env_vars",
     [
         (
+            {"key": "EXODUS_ENABLED", "val": "true"},
             {"key": "EXODUS_GW_CERT", "val": "/fake/cert"},
             {"key": "EXODUS_GW_KEY", "val": "/fake/key"},
             {"key": "EXODUS_GW_ENV", "val": "test"},
             {"key": "EXODUS_GW_URL", "val": ""},
         ),
         (
+            {"key": "EXODUS_ENABLED", "val": "true"},
             {
                 "key": "EXODUS_GW_URL",
                 "val": "https://exodus-gw.test.redhat.com",
@@ -28,6 +30,7 @@ from pubtools.exodus.gateway import ExodusGatewaySession
             {"key": "EXODUS_GW_CERT", "val": ""},
         ),
         (
+            {"key": "EXODUS_ENABLED", "val": "true"},
             {
                 "key": "EXODUS_GW_URL",
                 "val": "https://exodus-gw.test.redhat.com",
@@ -37,6 +40,7 @@ from pubtools.exodus.gateway import ExodusGatewaySession
             {"key": "EXODUS_GW_KEY", "val": ""},
         ),
         (
+            {"key": "EXODUS_ENABLED", "val": "true"},
             {
                 "key": "EXODUS_GW_URL",
                 "val": "https://exodus-gw.test.redhat.com",

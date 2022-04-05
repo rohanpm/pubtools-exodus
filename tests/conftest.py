@@ -27,6 +27,7 @@ class FakePublishOptions(object):
 def patch_env_vars(monkeypatch, env_map=None):
     if not env_map:
         env_map = {
+            "EXODUS_ENABLED": "true",
             "EXODUS_GW_URL": "https://exodus-gw.test.redhat.com",
             "EXODUS_GW_ENV": "test",
             "EXODUS_GW_CERT": "/path/test.crt",
