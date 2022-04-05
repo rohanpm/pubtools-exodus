@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- n/a
+
+## [1.0.1] - 2022-04-05
+
+### Fixed
+
 - Check EXODUS_ENABLED before populating vars from env 
 
 ## [1.0.0] - 2022-03-23
@@ -22,5 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Introduce exodus-pulp hook implementers
 - Introduce project structure, config, CI
 
-[Unreleased]: https://github.com/release-enineering/pubtools-exodus/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/release-engineering/pushsource/compare/v0.1.0...v1.0.0
+[Unreleased]: https://github.com/release-enineering/pubtools-exodus/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/release-engineering/pubtools-exodus/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/release-engineering/pubtools-exodus/compare/v0.1.0...v1.0.0
