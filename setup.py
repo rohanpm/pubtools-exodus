@@ -51,5 +51,6 @@ setup(
     },
     project_urls={
         "Changelog": "https://github.com/release-engineering/pubtools-exodus/blob/main/CHANGELOG.md",
+        "Documentation": "https://release-engineering.github.io/pubtools-exodus",
     },
 )

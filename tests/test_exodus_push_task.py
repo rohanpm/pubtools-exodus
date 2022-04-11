@@ -7,7 +7,7 @@ import pytest
 from pushsource import PushItem, Source
 from six import u
 
-from pubtools.exodus._tasks.push import entry_point
+from pubtools.exodus._tasks.push import doc_parser, entry_point
 
 TEST_DATA = os.path.join(os.path.dirname(__file__), "test_data", "exodus_push")
 
@@ -24,6 +24,12 @@ def test_exodus_push_entry_point(
 ):
     entry_point()
     assert mock_run.call_count == 1
+
+
+@mock.patch("pubtools.exodus._tasks.push.ExodusPushTask")
+def test_exodus_push_doc_parser(mock_push_task):
+    doc_parser()
+    assert mock_push_task.call_count == 1
 
 
 @mock.patch("pubtools.exodus._tasks.push.subprocess.Popen")

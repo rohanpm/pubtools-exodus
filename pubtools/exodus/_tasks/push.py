@@ -76,3 +76,7 @@ class ExodusPushTask(ExodusTask):
 def entry_point(args=None):
     task = ExodusPushTask(args)
     task.main()
+
+
+def doc_parser():
+    return ExodusPushTask().parser
