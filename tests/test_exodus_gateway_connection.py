@@ -57,11 +57,10 @@ def test_missing_env_vars(monkeypatch, env_vars):
         if not env_var["val"]:
             missing_key = env_var["key"]
     with pytest.raises(RuntimeError) as exc_info:
-        ExodusGatewaySession()
+        ExodusGatewaySession().new_publish()
         assert (
             str(exc_info.value)
-            == "Environment variable '%s' is not set, skipping exodus publish"
-            % missing_key
+            == "Environment variable '%s' is not set" % missing_key
         )
 
 

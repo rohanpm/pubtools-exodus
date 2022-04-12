@@ -37,7 +37,7 @@ class ExodusPulpHandler(ExodusGatewaySession):
                 The adjusted options used for this publish.
         """
 
-        if not self.exodus_enabled():
+        if not self.exodus_enabled:
             return None
 
         with self.lock:
@@ -60,7 +60,7 @@ class ExodusPulpHandler(ExodusGatewaySession):
         the content visible on the target CDN environment.
         """
 
-        if not self.exodus_enabled():
+        if not self.exodus_enabled:
             return
 
         if not self.publish:

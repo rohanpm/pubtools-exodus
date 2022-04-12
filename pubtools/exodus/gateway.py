@@ -18,7 +18,7 @@ class ExodusGatewaySession(
 ):  # pylint: disable=too-many-instance-attributes
     """Base class for operations passing through exodus-gateway."""
 
-    def __init__(self):
+    def __init__(self, exodus_enabled=None):
         super(ExodusGatewaySession, self).__init__()
 
         self.gw_env = None
@@ -29,13 +29,13 @@ class ExodusGatewaySession(
         self.session = None
         self.publish = None
 
+        self._exodus_enabled = exodus_enabled
+
         # These defaults are not advertised or expected but can be controlled
         # by environment variables when needed (e.g., testing).
         self.retries = int(os.getenv("EXODUS_GW_RETRIES") or "5")
         self.timeout = int(os.getenv("EXODUS_GW_TIMEOUT") or "900")
         self.wait = int(os.getenv("EXODUS_GW_WAIT") or "5")
-
-        self._populate_exodus_gw_vars()
 
     def new_session(self):
         retry_strategy = Retry(
@@ -104,6 +104,7 @@ class ExodusGatewaySession(
 
     def new_publish(self):
         """Issue request to exodus-gw to create a new publish."""
+        self._populate_exodus_gw_vars()
         self.check_cert()
 
         publish_url = os.path.join(self.gw_url, self.gw_env, "publish")
@@ -144,40 +145,41 @@ class ExodusGatewaySession(
         commit = resp.json()
         return commit
 
+    @property
     def exodus_enabled(self):
-        enable_vals = ["true", "t", "1", "yes", "y"]
-        return os.getenv("EXODUS_ENABLED", "False").lower() in enable_vals
+        if self._exodus_enabled is None:
+            enable_vals = ["true", "t", "1", "yes", "y"]
+            self._exodus_enabled = (
+                os.getenv("EXODUS_ENABLED", "False").lower() in enable_vals
+            )
+        return self._exodus_enabled
 
     def _populate_exodus_gw_vars(self):
         """Populate exodus gateway details from environment variables. All exodus CDN transactions
         go through exodus gateway."""
-        if not self.exodus_enabled():
+        if not self.exodus_enabled:
             return
 
         self.gw_env = os.getenv("EXODUS_GW_ENV")
         if not self.gw_env:
             raise RuntimeError(
-                "Environment variable '%s' is not set, skipping exodus publish"
-                % "EXODUS_GW_ENV"
+                "Environment variable '%s' is not set" % "EXODUS_GW_ENV"
             )
 
         self.gw_url = os.getenv("EXODUS_GW_URL")
         if not self.gw_url:
             raise RuntimeError(
-                "Environment variable '%s' is not set, skipping exodus publish"
-                % "EXODUS_GW_URL"
+                "Environment variable '%s' is not set" % "EXODUS_GW_URL"
             )
 
         self.gw_crt = os.getenv("EXODUS_GW_CERT")
         if not self.gw_crt:
             raise RuntimeError(
-                "Environment variable '%s' is not set, skipping exodus publish"
-                % "EXODUS_GW_CERT"
+                "Environment variable '%s' is not set" % "EXODUS_GW_CERT"
             )
 
         self.gw_key = os.getenv("EXODUS_GW_KEY")
         if not self.gw_key:
             raise RuntimeError(
-                "Environment variable '%s' is not set, skipping exodus publish"
-                % "EXODUS_GW_KEY"
+                "Environment variable '%s' is not set" % "EXODUS_GW_KEY"
             )
