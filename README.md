@@ -4,6 +4,7 @@ pubtools-exodus
 Utilities used by [release-engineering](https://github.com/release-engineering) publishing tools for interfacing with components of Red Hat's Content Delivery Network.
 
 - [Source](https://github.com/release-engineering/pubtools-exodus)
+- [Documentation](https://release-engineering.github.io/pubtools-exodus)
 
 
 Development
