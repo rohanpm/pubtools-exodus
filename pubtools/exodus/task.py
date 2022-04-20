@@ -13,7 +13,7 @@ class ExodusTask(ExodusGatewaySession):
     """Base class for Exodus tasks"""
 
     def __init__(self, args=None):
-        super(ExodusTask, self).__init__()
+        super(ExodusTask, self).__init__(exodus_enabled=True)
 
         self._args = None
         self._extra_args = None

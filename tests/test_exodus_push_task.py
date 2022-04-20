@@ -32,8 +32,14 @@ def test_exodus_push_doc_parser(mock_push_task):
     assert mock_push_task.call_count == 1
 
 
+@pytest.mark.parametrize("exodus_enabled", [True, None])
 @mock.patch("pubtools.exodus._tasks.push.subprocess.Popen")
-def test_exodus_push_typical(mock_popen, successful_gw_task, caplog):
+def test_exodus_push_typical(
+    mock_popen, exodus_enabled, successful_gw_task, caplog, monkeypatch
+):
+    if exodus_enabled == None:
+        monkeypatch.setenv("EXODUS_ENABLED", "")
+
     mock_popen.return_value.stdout = io.StringIO(
         u("fake exodus-rsync output\nfake task info\n")
     )
