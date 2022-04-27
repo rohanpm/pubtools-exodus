@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - n/a
 
+## [1.0.2] - 2022-04-27
+
+### Fixed
+
+- pubtools-exodus-push: Fix crash when EXODUS_ENABLED is not set or false
+
 ## [1.0.1] - 2022-04-05
 
 ### Fixed
@@ -28,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Introduce exodus-pulp hook implementers
 - Introduce project structure, config, CI
 
-[Unreleased]: https://github.com/release-enineering/pubtools-exodus/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/release-enineering/pubtools-exodus/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/release-engineering/pubtools-exodus/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/release-engineering/pubtools-exodus/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/release-engineering/pubtools-exodus/compare/v0.1.0...v1.0.0
