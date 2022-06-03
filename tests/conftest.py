@@ -3,7 +3,6 @@ import sys
 
 import attr
 import pytest
-import requests_mock
 from frozenlist2 import frozenlist
 from six.moves.urllib.parse import urljoin
 

@@ -67,8 +67,7 @@ class ExodusPushTask(ExodusTask):
             if ret != 0:
                 raise RuntimeError("Exodus push failed")
 
-        commit_task = self.commit_publish(publish)
-        self.poll_commit_completion(commit_task)
+        self.commit_publish(publish)
 
         LOG.info("Exodus push is complete")
 

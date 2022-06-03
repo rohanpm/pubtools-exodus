@@ -66,7 +66,10 @@ class ExodusGatewaySession(
             except:
                 raise outer
 
-            LOG.error("unsuccessful response from exodus-gw: %s", body)
+            LOG.error(
+                "Unsuccessful response from exodus-gw: %s",
+                body.get("detail") or body,
+            )
             raise
 
     def do_request(self, **kwargs):
@@ -92,7 +95,7 @@ class ExodusGatewaySession(
             if typed_ctx["authenticated"]:
                 roles = [str(role) for role in typed_ctx["roles"]]
                 LOG.debug(
-                    "authenticated with exodus-gw at %s as %s %s (roles: %s)",
+                    "Authenticated with exodus-gw at %s as %s %s (roles: %s)",
                     self.gw_url,
                     user_type,
                     typed_ctx[ident],
@@ -100,16 +103,23 @@ class ExodusGatewaySession(
                 )
                 break
         else:
-            LOG.debug("not authenticated with exodus-gw at %s", self.gw_url)
+            LOG.debug("Not authenticated with exodus-gw at %s", self.gw_url)
 
     def new_publish(self):
         """Issue request to exodus-gw to create a new publish."""
+
+        if not self.exodus_enabled:
+            return None
+
         self._populate_exodus_gw_vars()
         self.check_cert()
 
         publish_url = os.path.join(self.gw_url, self.gw_env, "publish")
-        resp = self.do_request(method="POST", url=publish_url)
-        return resp.json()
+        resp_json = self.do_request(method="POST", url=publish_url).json()
+
+        LOG.info("Created exodus-gw publish %s", resp_json["id"])
+
+        return resp_json
 
     def poll_commit_completion(self, commit):
         """Issues request(s) to exodus-gw for the commit's state, returning
@@ -126,7 +136,7 @@ class ExodusGatewaySession(
             task = resp.json()
 
             if task["state"] == "COMPLETE":
-                LOG.info("%s complete", msg)
+                LOG.debug("%s complete", msg)
                 return task
             if task["state"] == "FAILED":
                 raise RuntimeError("%s failed" % msg)
@@ -139,11 +149,16 @@ class ExodusGatewaySession(
         """Commits an exodus-gw publish, e.g.,
         https://exodus-gw.example.com/prod/publish/4e59c1a0/commit
         """
+
+        LOG.info("Committing exodus-gw publish %s", publish["id"])
+
         commit_url = urljoin(self.gw_url, publish["links"]["commit"])
-        LOG.debug("Committing publish %s", commit_url)
         resp = self.do_request(method="POST", url=commit_url)
         commit = resp.json()
-        return commit
+
+        self.poll_commit_completion(commit)
+
+        LOG.info("Committed exodus-gw publish %s", publish["id"])
 
     @property
     def exodus_enabled(self):
@@ -157,8 +172,6 @@ class ExodusGatewaySession(
     def _populate_exodus_gw_vars(self):
         """Populate exodus gateway details from environment variables. All exodus CDN transactions
         go through exodus gateway."""
-        if not self.exodus_enabled:
-            return
 
         self.gw_env = os.getenv("EXODUS_GW_ENV")
         if not self.gw_env:
