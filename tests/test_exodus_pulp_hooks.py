@@ -1,17 +1,11 @@
-import json
 import logging
-import os
 
 from pubtools.pluggy import pm, task_context
 
 from .conftest import FakePublishOptions
 
 
-def test_exodus_pulp_typical(successful_gw_task, monkeypatch, caplog):
-    monkeypatch.setenv("EXODUS_ENABLED", "True")
-    url = os.getenv("EXODUS_GW_URL")
-    env = os.getenv("EXODUS_GW_ENV")
-
+def test_exodus_pulp_typical(successful_gw_task, caplog):
     caplog.set_level(logging.DEBUG, "pubtools-exodus")
 
     # Simulate task start
@@ -24,7 +18,7 @@ def test_exodus_pulp_typical(successful_gw_task, monkeypatch, caplog):
         hook_rets = [ret for ret in hook_rets if ret is not None]
 
         assert (
-            "created exodus-gw publish 497f6eca-6276-4993-bfeb-53cbbbba6f08"
+            "Created exodus-gw publish 497f6eca-6276-4993-bfeb-53cbbbba6f08"
             in caplog.text
         )
         # The pre-publish hook should've returned options with exodus-publish
@@ -40,25 +34,29 @@ def test_exodus_pulp_typical(successful_gw_task, monkeypatch, caplog):
         pm.hook.task_pulp_flush()
 
         assert (
-            "committed exodus-gw publish: %s"
-            % json.dumps(
-                successful_gw_task["commit"]["response"], sort_keys=True
-            )
+            "Committing exodus-gw publish 497f6eca-6276-4993-bfeb-53cbbbba6f08"
+            in caplog.text
+        )
+        assert (
+            "exodus-gw commit 9187ec3d-ba51-4a3b-9298-e534b0869350 to "
+            "https://exodus-gw.test.redhat.com complete" in caplog.text
+        )
+        assert (
+            "Committed exodus-gw publish 497f6eca-6276-4993-bfeb-53cbbbba6f08"
             in caplog.text
         )
 
 
-def test_exodus_pulp_no_publish(successful_gw_task, monkeypatch, caplog):
-    monkeypatch.setenv("EXODUS_ENABLED", "True")
+def test_exodus_pulp_no_publish(patch_env_vars, caplog):
     caplog.set_level(logging.DEBUG, "pubtools-exodus")
 
     with task_context():
         pm.hook.task_pulp_flush()
 
-        assert "no exodus-gw publish to commit" in caplog.text
+        assert "No exodus-gw publish to commit" in caplog.text
 
 
-def test_exodus_pulp_disabled(successful_gw_task, monkeypatch, caplog):
+def test_exodus_pulp_disabled(monkeypatch, caplog):
     monkeypatch.setenv("EXODUS_ENABLED", "False")
     caplog.set_level(logging.DEBUG, "pubtools-exodus")
 

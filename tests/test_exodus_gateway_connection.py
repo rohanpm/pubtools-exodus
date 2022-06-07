@@ -140,11 +140,10 @@ def test_exodus_gateway_commit_timeout(requests_mock, caplog):
     with pytest.raises(RuntimeError) as exc_info:
         gw_conn = ExodusGatewaySession()
         gw_conn.publish = gw_conn.new_publish()
-        commit = gw_conn.commit_publish(gw_conn.publish)
-        gw_conn.poll_commit_completion(commit)
+        gw_conn.commit_publish(gw_conn.publish)
 
     assert (
-        "authenticated with exodus-gw at %s as user tester (roles: ['publisher'])"
+        "Authenticated with exodus-gw at %s as user tester (roles: ['publisher'])"
         % url
         in caplog.text
     )
@@ -212,11 +211,10 @@ def test_exodus_pulp_commit_fail(requests_mock, caplog, patch_env_vars):
     with pytest.raises(RuntimeError) as exc_info:
         gw_conn = ExodusGatewaySession()
         gw_conn.publish = gw_conn.new_publish()
-        commit = gw_conn.commit_publish(gw_conn.publish)
-        gw_conn.poll_commit_completion(commit)
+        gw_conn.commit_publish(gw_conn.publish)
 
     assert (
-        "authenticated with exodus-gw at %s as user tester (roles: ['publisher'])"
+        "Authenticated with exodus-gw at %s as user tester (roles: ['publisher'])"
         % url
         in caplog.text
     )
@@ -255,10 +253,9 @@ def test_exodus_pulp_no_auth(requests_mock, caplog, patch_env_vars):
     with pytest.raises(HTTPError) as exc_info:
         gw_conn = ExodusGatewaySession()
         gw_conn.publish = gw_conn.new_publish()
-        commit = gw_conn.commit_publish(gw_conn.publish)
-        gw_conn.poll_commit_completion(commit)
+        gw_conn.commit_publish(gw_conn.publish)
 
-    assert "not authenticated with exodus-gw at %s" % url in caplog.text
+    assert "Not authenticated with exodus-gw at %s" % url in caplog.text
     assert (
         str(exc_info.value)
         == "404 Client Error: None for url: https://exodus-gw.test.redhat.com/test/publish"
