@@ -1,5 +1,4 @@
 import os
-import sys
 
 import attr
 import pytest
@@ -35,14 +34,6 @@ def patch_env_vars(monkeypatch, env_map=None):
     for var in env_map.keys():
         monkeypatch.setenv(var, env_map[var])
     yield env_map
-
-
-@pytest.fixture
-def patch_sys_argv(sys_argv):
-    old_argv = sys.argv
-    sys.argv[:] = sys_argv
-    yield
-    sys.argv = old_argv
 
 
 @pytest.fixture

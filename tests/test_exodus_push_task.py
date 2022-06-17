@@ -7,21 +7,30 @@ import pytest
 from pushsource import PushItem, Source
 from six import u
 
-from pubtools.exodus._tasks.push import doc_parser, entry_point
+from pubtools.exodus._tasks.push import ExodusPushTask, doc_parser, entry_point
 
 TEST_DATA = os.path.join(os.path.dirname(__file__), "test_data", "exodus_push")
 
 
-@pytest.mark.parametrize(
-    "sys_argv",
-    [["", "--debug", "staged:%s" % os.path.join(TEST_DATA, "source-1")]],
+def test_exodus_push_task_args():
+    task = ExodusPushTask(args=["staged:/some/path"])
+
+    # Should have basic args
+    assert task.args.__dict__ == {
+        "debug": False,
+        "verbose": 0,
+        "source": "staged:/some/path",
+    }
+    # Should have no extra_args
+    assert task.extra_args == []
+
+
+@mock.patch(
+    "sys.argv",
+    ["", "--debug", "staged:%s" % os.path.join(TEST_DATA, "source-1")],
 )
 @mock.patch("pubtools.exodus._tasks.push.ExodusPushTask.run")
-def test_exodus_push_entry_point(
-    mock_run,
-    patch_sys_argv,
-    patch_env_vars,
-):
+def test_exodus_push_entry_point(mock_run, patch_env_vars):
     entry_point()
     assert mock_run.call_count == 1
 
@@ -106,27 +115,21 @@ def test_exodus_push_typical(
         )
 
 
-@pytest.mark.parametrize(
-    "sys_argv",
+@mock.patch(
+    "sys.argv",
     [
-        [
-            "",
-            "--debug",
-            "--verbose",
-            "staged:%s" % os.path.join(TEST_DATA, "source-2"),
-        ]
+        "",
+        "--debug",
+        "--verbose",
+        "staged:%s" % os.path.join(TEST_DATA, "source-2"),
     ],
 )
 @mock.patch("pubtools.exodus._tasks.push.subprocess.Popen")
-def test_exodus_push_subprocess_error(
-    mock_popen, successful_gw_task, patch_sys_argv, caplog
-):
+def test_exodus_push_subprocess_error(mock_popen, successful_gw_task, caplog):
     mock_popen.return_value.stdout = io.StringIO(
         u("fake exodus-rsync output\nfake task info\n")
     )
     mock_popen.return_value.wait.return_value = 1
-
-    src = os.path.join(TEST_DATA, "source-2")
 
     caplog.set_level(logging.DEBUG, "pubtools-exodus")
     cmd = [
@@ -157,20 +160,18 @@ def test_exodus_push_subprocess_error(
     )
 
 
-@pytest.mark.parametrize(
-    "sys_argv",
+@mock.patch(
+    "sys.argv",
     [
-        [
-            "",
-            "--debug",
-            "--verbose",
-            "test:%s" % os.path.join(TEST_DATA, "source-2"),
-        ]
+        "",
+        "--debug",
+        "--verbose",
+        "test:%s" % os.path.join(TEST_DATA, "source-2"),
     ],
 )
 @mock.patch("pubtools.exodus._tasks.push.subprocess.Popen")
 def test_exodus_push_unexpected_push_item(
-    mock_popen, successful_gw_task, patch_sys_argv, caplog
+    mock_popen, successful_gw_task, caplog
 ):
     mock_popen.return_value.wait.return_value = 1
     caplog.set_level(logging.DEBUG, "pubtools-exodus")
