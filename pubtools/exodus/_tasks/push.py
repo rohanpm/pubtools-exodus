@@ -44,6 +44,12 @@ class ExodusPushTask(ExodusTask):
                 "exodus-rsync",
                 "--exodus-publish",
                 publish_id,
+                "--exclude",
+                ".nfs*",
+                "--exclude",
+                ".latest_rsync",
+                "--exclude",
+                ".lock",
                 item.src,
                 "exodus:%s" % item.dest[0],
             ]
