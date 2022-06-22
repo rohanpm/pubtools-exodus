@@ -31,8 +31,16 @@ class ExodusTask(ExodusGatewaySession):
         Return the args if available from previous parse
         else parse with defined options and return the args
         """
-        if not self._args:
-            self._args, _ = self.parser.parse_known_args(self._override_args)
+        if self._args is None:
+            # Parse a copy of the raw args, as the parse may modify them.
+            to_parse = (
+                list(self._override_args) if self._override_args else None
+            )
+            # If args are unset, it's likely extra_args are too.
+            # Set both here to avoid repeating the operation later.
+            self._args, self._extra_args = self.parser.parse_known_args(
+                to_parse
+            )
         return self._args
 
     @property
@@ -41,10 +49,12 @@ class ExodusTask(ExodusGatewaySession):
         Return the remaining args from the previous parse,
         else parse and return the remaining args
         """
-        if not self._extra_args:
-            _, self._extra_args = self.parser.parse_known_args(
-                self._override_args
+        if self._extra_args is None:
+            # Parse a copy of the raw args, as the parse may modify them.
+            to_parse = (
+                list(self._override_args) if self._override_args else None
             )
+            _, self._extra_args = self.parser.parse_known_args(to_parse)
         return self._extra_args
 
     def _basic_args(self):
