@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - n/a
 
+## [1.2.0] - 2022-06-27
+
+- Reduce repeated argument parsing in ExodusTask
+- pubtools-exodus-push: Exclude *.nfs, .latest_rsync, .lock files for legacy parity
+
 ## [1.1.0] - 2022-06-13
 
 ### Changed
@@ -42,7 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Introduce exodus-pulp hook implementers
 - Introduce project structure, config, CI
 
-[Unreleased]: https://github.com/release-enineering/pubtools-exodus/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/release-enineering/pubtools-exodus/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/release-engineering/pubtools-exodus/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/release-engineering/pubtools-exodus/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/release-engineering/pubtools-exodus/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/release-engineering/pubtools-exodus/compare/v1.0.0...v1.0.1
