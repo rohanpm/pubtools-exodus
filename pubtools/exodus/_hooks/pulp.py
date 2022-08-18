@@ -17,6 +17,7 @@ class ExodusPulpHandler(ExodusGatewaySession):
         super(ExodusPulpHandler, self).__init__()
 
         self.lock = Lock()
+        self.publish_committed = False
 
     @hookimpl
     def pulp_repository_pre_publish(self, repository, options):
@@ -48,6 +49,21 @@ class ExodusPulpHandler(ExodusGatewaySession):
         args.append("--exodus-publish=%s" % self.publish["id"])
         return attr.evolve(options, rsync_extra_args=args)
 
+    def ensure_publish_committed(self):
+        """Commit the current publish, if and only if there is a current publish
+        and it was not already committed.
+        """
+        if not self.publish:
+            LOG.debug("No exodus-gw publish to commit")
+            return
+
+        if self.publish_committed:
+            LOG.debug("Publish is already committed")
+            return
+
+        self.publish_committed = True
+        self.commit_publish(self.publish)
+
     @hookimpl
     def task_pulp_flush(self):
         """Invoked during task execution after successful completion of all
@@ -56,16 +72,16 @@ class ExodusPulpHandler(ExodusGatewaySession):
         This implementation commits the active exodus-gw publish, making
         the content visible on the target CDN environment.
         """
-
-        if not self.publish:
-            LOG.debug("No exodus-gw publish to commit")
-            return
-
-        self.commit_publish(self.publish)
+        self.ensure_publish_committed()
 
     @hookimpl
-    def task_stop(self):
+    def task_stop(self, failed):
         pm.unregister(self)
+        if not failed:
+            # If a task is finishing up successfully and there's still an uncommitted
+            # publish, make sure to commit it. This is not expected to do anything
+            # if the commit happened earlier via task_pulp_flush.
+            self.ensure_publish_committed()
 
 
 @hookimpl

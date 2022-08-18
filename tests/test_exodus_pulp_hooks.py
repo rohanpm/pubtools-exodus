@@ -1,11 +1,18 @@
 import logging
 
+import pytest
 from pubtools.pluggy import pm, task_context
 
 from .conftest import FakePublishOptions
 
 
-def test_exodus_pulp_typical(successful_gw_task, caplog):
+@pytest.mark.parametrize(
+    "commit_hook_name,commit_hook_args",
+    [("task_pulp_flush", dict()), ("task_stop", dict(failed=False))],
+)
+def test_exodus_pulp_typical(
+    successful_gw_task, commit_hook_name, commit_hook_args, caplog
+):
     caplog.set_level(logging.DEBUG, "pubtools-exodus")
 
     # Simulate task start
@@ -30,8 +37,9 @@ def test_exodus_pulp_typical(successful_gw_task, caplog):
             ],
         )
 
-        # Simulate completion of pulp publish; call task pulp flush
-        pm.hook.task_pulp_flush()
+        # Trigger whichever hook is expected to make commit happen
+        hook = getattr(pm.hook, commit_hook_name)
+        hook(**commit_hook_args)
 
         assert (
             "Committing exodus-gw publish 497f6eca-6276-4993-bfeb-53cbbbba6f08"
@@ -58,10 +66,11 @@ def test_exodus_pulp_no_publish(patch_env_vars, caplog):
 
 def test_exodus_pulp_disabled(monkeypatch, caplog):
     monkeypatch.setenv("EXODUS_ENABLED", "False")
-    caplog.set_level(logging.DEBUG, "pubtools-exodus")
+    caplog.set_level(logging.INFO, "pubtools-exodus")
 
     with task_context():
         # With Exodus disabled, this should be a no-op.
         pm.hook.pulp_repository_pre_publish(repository=None, options={})
 
+    # Should not have generated anything INFO or higher.
     assert caplog.text == ""
