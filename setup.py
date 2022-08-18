@@ -21,7 +21,7 @@ def get_requirements():
 
 setup(
     name="pubtools-exodus",
-    version="1.1.0",
+    version="1.3.0",
     packages=find_packages(exclude=["tests"]),
     include_package_data=True,
     url="https://github.com/release-engineering/pubtools-exodus",
