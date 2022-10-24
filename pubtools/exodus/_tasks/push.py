@@ -1,6 +1,8 @@
 import logging
+import os
 import subprocess
 
+import attr
 from pushsource import Source
 
 from pubtools.exodus.task import ExodusTask
@@ -27,7 +29,22 @@ class ExodusPushTask(ExodusTask):
         with Source.get(self.args.source) as source:
             for item in source:
                 if item.src and len(item.dest) == 1:
-                    yield item
+                    # If the source directory passed to rsync does not end in a trailing
+                    # slash ("/"), rsync will publish the entire directory, not just the
+                    # contents of the directory.
+                    #
+                    # For example, "rsync ./example/rhel-8-for-x86_64-baseos-kickstart__7_DOT_4/RAW
+                    # exodus:rhel-8-for-x86_64-baseos-kickstart__8_DOT_4" would
+                    # publish to "/content/dist/rhel8/8.4/x86_64/baseos/kickstart/RAW",
+                    # whereas "rsync ./example/rhel-8-for-x86_64-baseos-kickstart__8_DOT_4/RAW/
+                    # exodus:rhel-8-for-x86_64-baseos-kickstart__8_DOT_4" would publish to
+                    # "/content/dist/rhel8/8.4/x86_64/baseos/kickstart".
+                    #
+                    # See https://linux.die.net/man/1/rsync for more details.
+                    item_src = item.src
+                    if os.path.isdir(item.src) and not item.src.endswith("/"):
+                        item_src = "%s/" % item.src
+                    yield attr.evolve(item, src=item_src)
                 else:
                     LOG.warning("Unexpected push item type: %s", item)
 
