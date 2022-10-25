@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - n/a
 
+## [1.3.1] - 2022-10-25
+
+- pubtools-exodus-push: fixed source directory basename incorrectly included in destination
+  path when publishing a directory
+
 ## [1.3.0] - 2022-08-19
 
 - When using pubtools-pulplib integration, exodus publishes are now committed at
@@ -52,7 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Introduce exodus-pulp hook implementers
 - Introduce project structure, config, CI
 
-[Unreleased]: https://github.com/release-enineering/pubtools-exodus/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/release-enineering/pubtools-exodus/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/release-engineering/pubtools-exodus/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/release-engineering/pubtools-exodus/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/release-engineering/pubtools-exodus/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/release-engineering/pubtools-exodus/compare/v1.0.2...v1.1.0
