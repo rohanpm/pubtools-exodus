@@ -83,7 +83,8 @@ class ExodusPushTask(ExodusTask):
                 stderr=subprocess.STDOUT,
                 universal_newlines=True,
             )
-            for line in proc.stdout:
+
+            for line in iter(proc.stdout.readline, ""):
                 LOG.info(line.strip())
 
             ret = proc.wait()
