@@ -1,9 +1,9 @@
 import os
+from urllib.parse import urljoin
 
 import attr
 import pytest
 from frozenlist2 import frozenlist
-from six.moves.urllib.parse import urljoin
 
 
 def frozenlist_or_none_converter(obj, map_fn=(lambda x: x)):

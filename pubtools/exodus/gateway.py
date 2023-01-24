@@ -1,13 +1,13 @@
 import logging
 import os
 import time
+from urllib.parse import urljoin
 
 import requests
 from monotonic import monotonic
 from requests.packages.urllib3.util.retry import (  # pylint: disable=import-error
     Retry,
 )
-from six.moves.urllib.parse import urljoin
 
 LOG = logging.getLogger("pubtools-exodus")
 LOG_FORMAT = "%(asctime)s [%(levelname)-8s] %(message)s"

@@ -5,7 +5,6 @@ import os
 import mock
 import pytest
 from pushsource import PushItem, Source
-from six import u
 
 from pubtools.exodus._tasks.push import ExodusPushTask, doc_parser, entry_point
 
@@ -50,7 +49,7 @@ def test_exodus_push_typical(
         monkeypatch.setenv("EXODUS_ENABLED", "")
 
     mock_popen.return_value.stdout = io.StringIO(
-        u("fake exodus-rsync output\nfake task info\n")
+        "fake exodus-rsync output\nfake task info\n"
     )
     mock_popen.return_value.wait.return_value = 0
 
@@ -127,7 +126,7 @@ def test_exodus_push_typical(
 @mock.patch("pubtools.exodus._tasks.push.subprocess.Popen")
 def test_exodus_push_subprocess_error(mock_popen, successful_gw_task, caplog):
     mock_popen.return_value.stdout = io.StringIO(
-        u("fake exodus-rsync output\nfake task info\n")
+        "fake exodus-rsync output\nfake task info\n"
     )
     mock_popen.return_value.wait.return_value = 1
 
