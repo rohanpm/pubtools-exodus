@@ -1,10 +1,10 @@
 import logging
 import os
+from urllib.parse import urljoin
 
 import mock
 import pytest
 from requests.exceptions import HTTPError
-from six.moves.urllib.parse import urljoin
 
 from pubtools.exodus.gateway import ExodusGatewaySession
 
