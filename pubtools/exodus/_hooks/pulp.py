@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 from threading import Lock
 
@@ -48,6 +49,17 @@ class ExodusPulpHandler(ExodusGatewaySession):
         )
         args.append("--exodus-publish=%s" % self.publish["id"])
         return attr.evolve(options, rsync_extra_args=args)
+
+    @property
+    def exodus_enabled(self):
+        # If this hook-specific env var is set, then it solely determines
+        # whether the hook is enabled.
+        enabled = os.getenv("EXODUS_PULP_HOOK_ENABLED")
+        if enabled is not None:
+            return enabled.lower() in ["true", "t", "1", "yes", "y"]
+
+        # Otherwise, we let super decide, which will check a more generic env var.
+        return super().exodus_enabled
 
     def ensure_publish_committed(self):
         """Commit the current publish, if and only if there is a current publish

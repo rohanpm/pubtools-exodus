@@ -64,8 +64,23 @@ def test_exodus_pulp_no_publish(patch_env_vars, caplog):
         assert "No exodus-gw publish to commit" in caplog.text
 
 
-def test_exodus_pulp_disabled(monkeypatch, caplog):
+def test_exodus_pulp_disabled_global(monkeypatch, caplog):
+    """Tests disablement of hook via global EXODUS_ENABLED var."""
     monkeypatch.setenv("EXODUS_ENABLED", "False")
+    caplog.set_level(logging.INFO, "pubtools-exodus")
+
+    with task_context():
+        # With Exodus disabled, this should be a no-op.
+        pm.hook.pulp_repository_pre_publish(repository=None, options={})
+
+    # Should not have generated anything INFO or higher.
+    assert caplog.text == ""
+
+
+def test_exodus_pulp_disabled_hook(monkeypatch, caplog):
+    """Tests disablement of hook via hook-specific var."""
+    monkeypatch.setenv("EXODUS_ENABLED", "True")
+    monkeypatch.setenv("EXODUS_PULP_HOOK_ENABLED", "0")
     caplog.set_level(logging.INFO, "pubtools-exodus")
 
     with task_context():
