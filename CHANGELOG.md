@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - n/a
 
+## [1.4.0] - 2023-09-27
+
+- pubtools-pulplib integration can now be toggled via `EXODUS_PULP_HOOK_ENABLED`
+  environment variable
+
 ## [1.3.2] - 2022-12-13
 
 - pubtools-exodus-push: Fix exodus-rsync log buffering
@@ -61,7 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Introduce exodus-pulp hook implementers
 - Introduce project structure, config, CI
 
-[Unreleased]: https://github.com/release-enineering/pubtools-exodus/compare/v1.3.2...HEAD
+[Unreleased]: https://github.com/release-enineering/pubtools-exodus/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/release-engineering/pubtools-exodus/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/release-engineering/pubtools-exodus/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/release-engineering/pubtools-exodus/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/release-engineering/pubtools-exodus/compare/v1.2.0...v1.3.0
