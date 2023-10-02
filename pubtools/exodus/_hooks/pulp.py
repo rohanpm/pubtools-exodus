@@ -24,8 +24,8 @@ class ExodusPulpHandler(ExodusGatewaySession):
     def pulp_repository_pre_publish(self, repository, options):
         """Invoked as the first step in publishing a Pulp repository.
 
-        This implementation adds to each config the --exodus-publish argument,
-        attaching the repository to an exodus-gw publish.
+        This implementation adds to each config the necessary arguments
+        to attach this repository's publish task to an exodus-gw publish.
 
         Args:
             repository (:class:`~pubtools.pulplib.Repository`):
@@ -48,6 +48,17 @@ class ExodusPulpHandler(ExodusGatewaySession):
             list(options.rsync_extra_args) if options.rsync_extra_args else []
         )
         args.append("--exodus-publish=%s" % self.publish["id"])
+
+        # 2023-10: by default, the pulp hook should always use phase1 commit.
+        # But since the functionality is relatively new, this is provided as an
+        # escape hatch in case it would need to be disabled in some environments
+        # for unanticipated reasons.
+        #
+        # Consider deleting this conditional once the functionality is proven
+        # in production.
+        if os.getenv("EXODUS_PULP_HOOK_PHASE1_COMMIT", "1") == "1":
+            args.append("--exodus-commit=phase1")
+
         return attr.evolve(options, rsync_extra_args=args)
 
     @property
