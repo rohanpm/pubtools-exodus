@@ -34,6 +34,7 @@ def test_exodus_pulp_typical(
             rsync_extra_args=[
                 "--existing-arg",
                 "--exodus-publish=497f6eca-6276-4993-bfeb-53cbbbba6f08",
+                "--exodus-commit=phase1",
             ],
         )
 
@@ -52,6 +53,29 @@ def test_exodus_pulp_typical(
         assert (
             "Committed exodus-gw publish 497f6eca-6276-4993-bfeb-53cbbbba6f08"
             in caplog.text
+        )
+
+
+def test_exodus_pulp_phase1_disabled(
+    successful_gw_task, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setenv("EXODUS_PULP_HOOK_PHASE1_COMMIT", "0")
+
+    with task_context():
+        hook_rets = pm.hook.pulp_repository_pre_publish(
+            repository=None,
+            options=FakePublishOptions(rsync_extra_args=["--existing-arg"]),
+        )
+        hook_rets = [ret for ret in hook_rets if ret is not None]
+
+        # The pre-publish hook should've returned options with exodus-publish
+        # arg appended to existing rsync_extra_args, but this time it should
+        # NOT have added exodus-commit due to the above env var.
+        assert hook_rets[0] == FakePublishOptions(
+            rsync_extra_args=[
+                "--existing-arg",
+                "--exodus-publish=497f6eca-6276-4993-bfeb-53cbbbba6f08",
+            ],
         )
 
 
