@@ -20,6 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt-get -y update
           sudo apt-get install -y krb5-config libkrb5-dev
           python -m pip install -U pip
           pip install tox
@@ -36,8 +37,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install RPM
-        run: sudo apt-get install -y rpm libkrb5-dev
+      - name: Install OS packages
+        run: |
+          sudo apt-get -y update
+          sudo apt-get install -y rpm libkrb5-dev
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
