@@ -42,6 +42,7 @@ class ExodusGatewaySession(
             total=int(self.retries),
             backoff_factor=1,
             status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=Retry.DEFAULT_ALLOWED_METHODS.union(["POST"]),
         )
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
 
